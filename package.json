@@ -1,0 +1,15 @@
+{
+  "name": "random-wiki-server",
+  "version": "1.0.0",
+  "description": "Express API für zufällige Wikipedia-Artikel",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  },
+  "license": "MIT"
+}
