@@ -10,7 +10,13 @@ app.get('/random-wiki', async (req, res) => {
     const j = await r.json();
     const pages = Object.values(j.query.pages);
     const p = pages[0];
-    res.json({ title: p.title || '', extract: p.extract || '' });
+    const jsonString = ' title: p.title || '', extract: p.extract || '' ';
+    let asciiValues = [];
+    for (let i = 0; i < jsonString.length; i++) {
+    asciiValues.push(jsonString.charCodeAt(i));
+}
+console.log(asciiValues.join(' ')); // 123 34 97 34 58 49 125
+
   } catch (e) {
     res.status(500).json({ error: 'fetch failed' });
   }
