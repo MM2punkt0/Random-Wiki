@@ -108,7 +108,6 @@ function sendCloudVar(projectId, varName, value, sessionId) {
 
   ws.on("open", () => {
     console.log("[DEBUG] WebSocket connected to Scratch Cloud.");
-    };
 
 
     console.log("[DEBUG] Sending message:", msg);
