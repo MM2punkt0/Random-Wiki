@@ -109,17 +109,24 @@ function setCloudVar(projectId, varName, value, sessionId) {
 
 
 // Chunks automatisch an Scratch senden
-function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
   const chunks = chunkAsciiString(asciiString);
 
-  chunks.forEach((chunk, index) => {
-    const varName = `${baseName}_${index + 1}`;
-    setCloudVar(projectId, varName, chunk, sessionId);
-  });
+  for (let i = 0; i < chunks.length; i++) {
+    const varName = `${baseName}_${i + 1}`;
+    console.log(`[DEBUG] Sending chunk ${i + 1}/${chunks.length} → ${varName}`);
+    setCloudVar(projectId, varName, chunks[i], sessionId);
+    await wait(300); // wichtig!
+  }
 
-  // Anzahl der Chunks speichern (optional, sehr nützlich)
+  // Anzahl der Chunks speichern
   setCloudVar(projectId, `${baseName}_count`, chunks.length, sessionId);
 }
+
 
 // Express-Route mit Chunk-System
 app.get('/random-wiki-ascii-scratchbotinfpr26', async (req, res) => {
