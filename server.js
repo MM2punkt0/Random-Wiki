@@ -121,7 +121,7 @@ function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
 
 
   // Anzahl der Chunks speichern
-  setCloudVar(projectId, `${baseName}_count`, chunks.length, sessionId);
+  sendCloudVar(projectId, `${baseName}_count`, chunks.length, sessionId);
 
 function toSafeAscii(str) {
   // 1. Unicode normalisieren
