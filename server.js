@@ -62,6 +62,7 @@ let isProcessing = false;
 
 function enqueueCloudUpdate(projectId, varName, value, sessionId) {
   queue.push({ projectId, varName, value, sessionId });
+  console.log(`[QUEUE] Added job → ${varName}`);
   processQueue();
 }
 
@@ -72,7 +73,7 @@ async function processQueue() {
   while (queue.length > 0) {
     const job = queue.shift();
     await sendCloudVar(job.projectId, job.varName, job.value, job.sessionId);
-    await new Promise(r => setTimeout(r, 1000)); // 1 Sekunde Pause
+    await new Promise(r => setTimeout(r, 1000)); // wichtig!
   }
 
   isProcessing = false;
@@ -80,6 +81,8 @@ async function processQueue() {
 
 function sendCloudVar(projectId, varName, value, sessionId) {
   return new Promise(resolve => {
+    console.log(`[QUEUE] Sending → ${varName} = "${String(value).slice(0, 50)}..."`);
+
     const ws = new WebSocket("wss://clouddata.scratch.mit.edu/", {
       headers: {
         "Cookie": `scratchsessionsid=${sessionId};`,
@@ -96,13 +99,17 @@ function sendCloudVar(projectId, varName, value, sessionId) {
       }));
     });
 
-    ws.on("close", () => resolve());
-    ws.on("error", () => resolve());
+    ws.on("close", () => {
+      console.log(`[QUEUE] Done → ${varName}`);
+      resolve();
+    });
+
+    ws.on("error", err => {
+      console.log(`[QUEUE] ERROR → ${varName}:`, err.message);
+      resolve();
+    });
   });
 }
-
-
-
 
 // Chunks automatisch an Scratch senden
 function wait(ms) {
@@ -118,9 +125,6 @@ function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
 
   enqueueCloudUpdate(projectId, `${baseName}_count`, chunks.length, sessionId);
 }
-
-  // Anzahl der Chunks speichern
- // sendCloudVar(`${baseName}_count`, chunks.length, sessionId);
 
 function toSafeAscii(str) {
   // 1. Unicode normalisieren
