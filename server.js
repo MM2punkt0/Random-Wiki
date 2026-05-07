@@ -57,7 +57,50 @@ function chunkAsciiString(str, chunkSize = 200) {
 // Cloudvariable setzen
 const WebSocket = require("ws");
 
-function setCloudVar(projectId, varName, value, sessionId) {
+const queue = [];
+let isProcessing = false;
+
+function enqueueCloudUpdate(projectId, varName, value, sessionId) {
+  queue.push({ projectId, varName, value, sessionId });
+  processQueue();
+}
+
+async function processQueue() {
+  if (isProcessing) return;
+  isProcessing = true;
+
+  while (queue.length > 0) {
+    const job = queue.shift();
+    await sendCloudVar(job.projectId, job.varName, job.value, job.sessionId);
+    await new Promise(r => setTimeout(r, 1000)); // 1 Sekunde Pause
+  }
+
+  isProcessing = false;
+}
+
+function sendCloudVar(projectId, varName, value, sessionId) {
+  return new Promise(resolve => {
+    const ws = new WebSocket("wss://clouddata.scratch.mit.edu/", {
+      headers: {
+        "Cookie": `scratchsessionsid=${sessionId};`,
+        "Origin": "https://scratch.mit.edu"
+      }
+    });
+
+    ws.on("open", () => {
+      ws.send(JSON.stringify({
+        method: "set",
+        name: `☁ ${varName}`,
+        value: String(value),
+        project_id: projectId
+      }));
+    });
+
+    ws.on("close", () => resolve());
+    ws.on("error", () => resolve());
+  });
+}
+
   console.log("\n================ SCRATCH DEBUG ================");
   console.log("[DEBUG] Preparing to send cloud variable:");
   console.log("  Project ID:", projectId);
@@ -66,11 +109,6 @@ function setCloudVar(projectId, varName, value, sessionId) {
   console.log("  Value preview:", String(value).slice(0, 120), "...");
   console.log("  SessionID length:", sessionId.length);
 
-  const ws = new WebSocket("wss://clouddata.scratch.mit.edu/", {
-    headers: {
-      "Cookie": `scratchsessionsid=${sessionId};`,
-      "Origin": "https://scratch.mit.edu"
-    }
   });
 
   ws.on("open", () => {
@@ -84,8 +122,6 @@ function setCloudVar(projectId, varName, value, sessionId) {
     };
 
     console.log("[DEBUG] Sending message:", msg);
-
-    ws.send(JSON.stringify(msg));
   });
 
   ws.on("message", data => {
