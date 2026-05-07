@@ -103,7 +103,6 @@ function sendCloudVar(projectId, varName, value, sessionId) {
 
   console.log("\n================ SCRATCH DEBUG ================");
   console.log("[DEBUG] Preparing to send cloud variable:");
-  console.log("  Project ID:", projectId);
   console.log("  Variable:", `☁ ${varName}`);
   console.log("  Value length:", String(value).length);
   console.log("  Value preview:", String(value).slice(0, 120), "...");
