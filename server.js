@@ -149,15 +149,16 @@ function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
+function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
   const chunks = chunkAsciiString(asciiString);
 
-  for (let i = 0; i < chunks.length; i++) {
-    const varName = `${baseName}_${i + 1}`;
-    console.log(`[DEBUG] Sending chunk ${i + 1}/${chunks.length} → ${varName}`);
-    setCloudVar(projectId, varName, chunks[i], sessionId);
-    await wait(300); // wichtig!
-  }
+  chunks.forEach((chunk, i) => {
+    enqueueCloudUpdate(projectId, `${baseName}_${i + 1}`, chunk, sessionId);
+  });
+
+  enqueueCloudUpdate(projectId, `${baseName}_count`, chunks.length, sessionId);
+}
+
 
   // Anzahl der Chunks speichern
   setCloudVar(projectId, `${baseName}_count`, chunks.length, sessionId);
