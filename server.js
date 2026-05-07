@@ -16,7 +16,7 @@ app.get('/random-wiki', async (req, res) => {
   }
 });
 
-// ➕ NEU: /random-wiki-ascii
+// /random-wiki-ascii
 app.get('/random-wiki-ascii', async (req, res) => {
   try {
     const url = 'https://de.wikipedia.org/w/api.php?action=query&format=json&generator=random&grnnamespace=0&prop=extracts&exintro=1&explaintext=1&grnlimit=1';
@@ -29,19 +29,21 @@ app.get('/random-wiki-ascii', async (req, res) => {
     const extract = p.extract || '';
 
     // Text → ASCII Dezimalzahlen
-    const ascii = extract
-      .split('')
-      .map(ch => ch.charCodeAt(0))
-      .join(' ');
+    const toAscii = str =>
+      str
+        .split('')
+        .map(ch => ch.charCodeAt(0))
+        .join(' ');
 
     res.json({
-      title,
-      extract_ascii: ascii
+      title: toAscii(title),
+      extract: toAscii(extract)
     });
   } catch (e) {
     res.status(500).json({ error: 'fetch failed' });
   }
 });
+
 
 app.listen(process.env.PORT || 3000, () => console.log('Server running'));
 
