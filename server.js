@@ -45,5 +45,98 @@ app.get('/random-wiki-ascii', async (req, res) => {
 });
 
 
+// Hilfsfunktion: ASCII-String in Chunks aufteilen
+function chunkAsciiString(str, chunkSize = 200) {
+  const parts = [];
+  for (let i = 0; i < str.length; i += chunkSize) {
+    parts.push(str.slice(i, i + chunkSize));
+  }
+  return parts;
+}
+
+// Cloudvariable setzen
+const WebSocket = require("ws");
+
+function setCloudVar(projectId, varName, value, sessionId) {
+  const ws = new WebSocket("wss://clouddata.scratch.mit.edu/", {
+    headers: {
+      "Cookie": `scratchsessionsid=${sessionId};`,
+      "Origin": "https://scratch.mit.edu"
+    }
+  });
+
+  ws.on("open", () => {
+    ws.send(JSON.stringify({
+      method: "set",
+      name: `☁ ${varName}`,
+      value: String(value),
+      project_id: projectId
+    }));
+    ws.close();
+  });
+}
+
+// Chunks automatisch an Scratch senden
+function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
+  const chunks = chunkAsciiString(asciiString);
+
+  chunks.forEach((chunk, index) => {
+    const varName = `${baseName}_${index + 1}`;
+    setCloudVar(projectId, varName, chunk, sessionId);
+  });
+
+  // Anzahl der Chunks speichern (optional, sehr nützlich)
+  setCloudVar(projectId, `${baseName}_count`, chunks.length, sessionId);
+}
+
+// Express-Route mit Chunk-System
+app.get('/random-wiki-ascii-scratchbotinfpr26', async (req, res) => {
+  try {
+    const url = 'https://de.wikipedia.org/w/api.php?action=query&format=json&generator=random&grnnamespace=0&prop=extracts&exintro=1&explaintext=1&grnlimit=1';
+    const r = await fetch(url);
+    const j = await r.json();
+    const pages = Object.values(j.query.pages);
+    const p = pages[0];
+
+    const title = p.title || '';
+    const extract = p.extract || '';
+
+    const toAscii = str =>
+      str.split('').map(ch => ch.charCodeAt(0)).join(' ');
+
+    const title_ascii = toAscii(title);
+    const extract_ascii = toAscii(extract);
+
+    // Titel-Chunks senden
+    sendChunksToScratch(
+      process.env.SCRATCH_PROJECT,
+      "title_ascii",
+      title_ascii,
+      process.env.SCRATCH_SESSION
+    );
+
+    // Extract-Chunks senden
+    sendChunksToScratch(
+      process.env.SCRATCH_PROJECT,
+      "extract_ascii",
+      extract_ascii,
+      process.env.SCRATCH_SESSION
+    );
+
+    res.json({
+      title,
+      title_ascii,
+      extract_ascii
+    });
+
+  } catch (e) {
+    res.status(500).json({ error: 'fetch failed' });
+  }
+});
+
+
+
+
+
 app.listen(process.env.PORT || 3000, () => console.log('Server running'));
 
