@@ -153,9 +153,13 @@ function toSafeAscii(str) {
     return code >= 32 && code <= 126;
   }).join("");
 
-  // In ASCII-Dezimal umwandeln
-  return str.split("").map(ch => ch.charCodeAt(0)).join(" ");
+  // ASCII ohne führende Nullen erzeugen
+  return str
+    .split("")
+    .map(ch => ch.charCodeAt(0).toString()) // KEIN padding!
+    .join(" ");
 }
+
 
 
 // Express-Route mit Chunk-System
