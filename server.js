@@ -58,6 +58,12 @@ function chunkAsciiString(str, chunkSize = 200) {
 const WebSocket = require("ws");
 
 function setCloudVar(projectId, varName, value, sessionId) {
+  console.log(`\n[DEBUG] Preparing to send cloud variable:`);
+  console.log(`  Project ID: ${projectId}`);
+  console.log(`  Variable: ☁ ${varName}`);
+  console.log(`  Value length: ${String(value).length}`);
+  console.log(`  Value preview: ${String(value).slice(0, 80)}...`);
+
   const ws = new WebSocket("wss://clouddata.scratch.mit.edu/", {
     headers: {
       "Cookie": `scratchsessionsid=${sessionId};`,
@@ -66,15 +72,33 @@ function setCloudVar(projectId, varName, value, sessionId) {
   });
 
   ws.on("open", () => {
-    ws.send(JSON.stringify({
+    console.log("[DEBUG] WebSocket connected to Scratch Cloud.");
+
+    const msg = {
       method: "set",
       name: `☁ ${varName}`,
       value: String(value),
       project_id: projectId
-    }));
-    ws.close();
+    };
+
+    console.log("[DEBUG] Sending message:", msg);
+
+    ws.send(JSON.stringify(msg));
+  });
+
+  ws.on("message", data => {
+    console.log("[DEBUG] Scratch responded:", data.toString());
+  });
+
+  ws.on("close", () => {
+    console.log("[DEBUG] WebSocket closed.");
+  });
+
+  ws.on("error", err => {
+    console.error("[ERROR] WebSocket error:", err);
   });
 }
+
 
 // Chunks automatisch an Scratch senden
 function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
