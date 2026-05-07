@@ -39,10 +39,6 @@ function encodeToSlices(text, maxIdsPerSlice=12){
   return slices; // Array von Dezimalstrings (z.B. ["010203...", "0506..."])
 }
 // server.js
-const express = require('express');
-const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
-const app = express();
-
 app.get('/random-wiki-ascii', async (req, res) => {
   try {
     const url = 'https://de.wikipedia.org/w/api.php?action=query&format=json&generator=random&grnnamespace=0&prop=extracts&exintro=1&explaintext=1&grnlimit=1';
