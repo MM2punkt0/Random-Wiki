@@ -101,34 +101,6 @@ function sendCloudVar(projectId, varName, value, sessionId) {
   });
 }
 
-  console.log("\n================ SCRATCH DEBUG ================");
-  console.log("[DEBUG] Preparing to send cloud variable:");
-
-
-
-  ws.on("open", () => {
-    console.log("[DEBUG] WebSocket connected to Scratch Cloud.");
-
-
-    console.log("[DEBUG] Sending message:", msg);
-  });
-
-  ws.on("message", data => {
-    console.log("[DEBUG] Scratch responded:", data.toString());
-  });
-
-  ws.on("error", err => {
-    console.error("[ERROR] WebSocket error:", err);
-  });
-
-  ws.on("unexpected-response", (req, res) => {
-    console.error("[ERROR] Unexpected response from Scratch:", res.statusCode, res.statusMessage);
-  });
-
-  ws.on("close", (code, reason) => {
-    console.log("[DEBUG] WebSocket closed. Code:", code, "Reason:", reason.toString());
-    console.log("===============================================");
-  });
 
 
 
