@@ -139,7 +139,6 @@ function sendCloudVar(projectId, varName, value, sessionId) {
     console.log("[DEBUG] WebSocket closed. Code:", code, "Reason:", reason.toString());
     console.log("===============================================");
   });
-}
 
 
 
