@@ -127,13 +127,13 @@ function sendChunksToScratch(projectId, baseName, asciiString, sessionId) {
 }
 
 function toSafeAscii(str) {
-  // 1. Unicode normalisieren
+  // Unicode normalisieren
   str = str.normalize("NFKD");
 
-  // 2. Diakritische Zeichen entfernen (é → e)
+  // Diakritische Zeichen entfernen
   str = str.replace(/[\u0300-\u036f]/g, "");
 
-  // 3. Problematische Zeichen ersetzen
+  // Problematische Zeichen ersetzen
   const replacements = {
     "–": "-", "—": "-", "−": "-",
     "„": "\"", "“": "\"", "”": "\"",
@@ -147,10 +147,13 @@ function toSafeAscii(str) {
 
   str = str.replace(/./g, ch => replacements[ch] || ch);
 
-  // 4. Nur ASCII 32–126 behalten
-  str = str.replace(/[^\x20-\x7E]/g, "");
+  // HARTE ASCII-FILTERUNG: nur Zeichen 32–126 erlauben
+  str = str.split("").filter(ch => {
+    const code = ch.charCodeAt(0);
+    return code >= 32 && code <= 126;
+  }).join("");
 
-  // 5. In ASCII-Dezimal umwandeln
+  // In ASCII-Dezimal umwandeln
   return str.split("").map(ch => ch.charCodeAt(0)).join(" ");
 }
 
