@@ -127,6 +127,34 @@ async function sendChunksToScratch(projectId, baseName, asciiString, sessionId) 
   setCloudVar(projectId, `${baseName}_count`, chunks.length, sessionId);
 }
 
+function toSafeAscii(str) {
+  // 1. Unicode normalisieren
+  str = str.normalize("NFKD");
+
+  // 2. Diakritische Zeichen entfernen (é → e)
+  str = str.replace(/[\u0300-\u036f]/g, "");
+
+  // 3. Problematische Zeichen ersetzen
+  const replacements = {
+    "–": "-", "—": "-", "−": "-",
+    "„": "\"", "“": "\"", "”": "\"",
+    "‚": "'", "‘": "'", "’": "'",
+    "…": "...",
+    "ß": "ss",
+    "ø": "o", "Ø": "O",
+    "æ": "ae", "Æ": "AE",
+    "œ": "oe", "Œ": "OE"
+  };
+
+  str = str.replace(/./g, ch => replacements[ch] || ch);
+
+  // 4. Nur ASCII 32–126 behalten
+  str = str.replace(/[^\x20-\x7E]/g, "");
+
+  // 5. In ASCII-Dezimal umwandeln
+  return str.split("").map(ch => ch.charCodeAt(0)).join(" ");
+}
+
 
 // Express-Route mit Chunk-System
 app.get('/random-wiki-ascii-scratchbotinfpr26', async (req, res) => {
@@ -140,8 +168,7 @@ app.get('/random-wiki-ascii-scratchbotinfpr26', async (req, res) => {
     const title = p.title || '';
     const extract = p.extract || '';
 
-    const toAscii = str =>
-      str.split('').map(ch => ch.charCodeAt(0)).join(' ');
+   const toAscii = toSafeAscii;
 
     const title_ascii = toAscii(title);
     const extract_ascii = toAscii(extract);
