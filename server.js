@@ -104,18 +104,12 @@ function sendCloudVar(projectId, varName, value, sessionId) {
   console.log("\n================ SCRATCH DEBUG ================");
   console.log("[DEBUG] Preparing to send cloud variable:");
 
-  console.log("  SessionID length:", sessionId.length);
 
 
   ws.on("open", () => {
     console.log("[DEBUG] WebSocket connected to Scratch Cloud.");
-
-    const msg = {
-      method: "set",
-      name: `☁ ${varName}`,
-      value: String(value),
-      project_id: projectId
     };
+
 
     console.log("[DEBUG] Sending message:", msg);
   });
