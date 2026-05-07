@@ -1,7 +1,7 @@
 {
   "name": "random-wiki-server",
   "version": "1.0.0",
-  "description": "Express API für zufällige Wikipedia-Artikel",
+  "description": "Express API für zufällige Wikipedia-Artikel 'random-wiki-production.up.railway.app/random-wiki' ",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
