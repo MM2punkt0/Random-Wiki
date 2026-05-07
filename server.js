@@ -111,6 +111,29 @@ function sendCloudVar(projectId, varName, value, sessionId) {
   });
 }
 
+// Chunks Komprimieren
+const LZString = require("lz-string");
+
+function compressToAsciiChunks(text, chunkSize = 200) {
+  // 1. LZ-Kompression → Base64
+  const compressed = LZString.compressToBase64(text);
+
+  // 2. Base64 → ASCII-Zahlen (Scratch-kompatibel)
+  const ascii = compressed
+    .split("")
+    .map(ch => ch.charCodeAt(0).toString()) // KEINE führenden Nullen
+    .join(" ");
+
+  // 3. In Chunks aufteilen
+  const chunks = [];
+  for (let i = 0; i < ascii.length; i += chunkSize) {
+    chunks.push(ascii.slice(i, i + chunkSize));
+  }
+
+  return chunks;
+}
+
+
 // Chunks automatisch an Scratch senden
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -160,6 +183,16 @@ function toSafeAscii(str) {
     .join(" ");
 }
 
+function sendCompressedToScratch(projectId, baseName, text, sessionId) {
+  const chunks = compressToAsciiChunks(text);
+
+  chunks.forEach((chunk, i) => {
+    enqueueCloudUpdate(projectId, `${baseName}_${i + 1}`, chunk, sessionId);
+  });
+
+  enqueueCloudUpdate(projectId, `${baseName}_count`, chunks.length, sessionId);
+}
+
 
 
 // Express-Route mit Chunk-System
@@ -180,12 +213,20 @@ app.get('/random-wiki-ascii-scratchbotinfpr26', async (req, res) => {
     const extract_ascii = toAscii(extract);
 
     // Titel-Chunks senden
-    sendChunksToScratch(
-      process.env.SCRATCH_PROJECT,
-      "title_ascii",
-      title_ascii,
-      process.env.SCRATCH_SESSION
-    );
+    sendCompressedToScratch(
+  process.env.SCRATCH_PROJECT,
+  "extract_ascii",
+  extract,
+  process.env.SCRATCH_SESSION
+);
+
+sendCompressedToScratch(
+  process.env.SCRATCH_PROJECT,
+  "title_ascii",
+  title,
+  process.env.SCRATCH_SESSION
+);
+
 
     // Extract-Chunks senden
     sendChunksToScratch(
